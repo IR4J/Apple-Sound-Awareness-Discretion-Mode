@@ -9,4 +9,4 @@ Discretion Mode notifies users when audio from their AirPods may be audible to p
 
 Sound Awareness explores how AirPods could help users become more conscious of sound leakage while listening to music, watching videos, or taking calls.
 
-![Discretion Mode Notification](images/DiscretionModeNotif.png)
+![Discretion Mode Notification](DiscretionModeNotif.png)
