@@ -1,8 +1,7 @@
 # Sound Awareness
 
 ### Discretion Mode
-
-Exploring a new listening experience for AirPods.
+New listening mode for AirPods.
 
 Discretion Mode notifies users when audio from their AirPods may be audible to people around them, helping maintain a more private listening experience.
 
