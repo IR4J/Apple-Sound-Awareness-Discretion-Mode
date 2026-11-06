@@ -1,4 +1,4 @@
-# Apple | Sound Awareness
+# Sound Awareness
 
 ### Discretion Mode
 
