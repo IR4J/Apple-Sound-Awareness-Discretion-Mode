@@ -12,7 +12,7 @@ Sound Awareness explores how AirPods could help users become more conscious of s
 
 ### Example
 
-<p align="center">
+<p align="left">
   <img src="DiscretionModeNotif.png" alt="Discretion Mode Notification" width="300">
 </p>
 
