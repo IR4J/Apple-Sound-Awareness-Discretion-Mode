@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import './App.css'
 import Symbol from './Symbol'
 import VolumeControl from './VolumeControl'
@@ -7,13 +7,98 @@ import { ENVIRONMENT_THRESHOLDS } from './volumeGesture'
 
 const TOTAL_DURATION = 218 // 0:41 + 2:57 = 3:38 (218 seconds)
 
+const ENVIRONMENTS = [
+  {
+    id: 'nyc',
+    name: 'New York City',
+    description:
+      'Louder background sounds make the threshold higher, giving you more room before your audio can be heard nearby.',
+  },
+  {
+    id: 'library',
+    name: 'Library',
+    description:
+      'Quieter background sounds make the threshold lower, lowering notfication will sound earlier so your audio stays private.',
+  },
+]
+
+function EnvironmentControlItem({ scene, isExpanded, onSelect }) {
+  const buttonRef = useRef(null)
+  const contentRef = useRef(null)
+  const [bounds, setBounds] = useState(null)
+
+  useLayoutEffect(() => {
+    function measure() {
+      if (!buttonRef.current || !contentRef.current) return
+      setBounds({
+        collapsedWidth: buttonRef.current.offsetWidth,
+        collapsedHeight: buttonRef.current.offsetHeight,
+        expandedWidth: contentRef.current.offsetWidth,
+        expandedHeight: contentRef.current.offsetHeight,
+      })
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    if (buttonRef.current) observer.observe(buttonRef.current)
+    if (contentRef.current) observer.observe(contentRef.current)
+    return () => observer.disconnect()
+  }, [])
+
+  const style = bounds
+    ? {
+      width: `${isExpanded ? bounds.expandedWidth : bounds.collapsedWidth}px`,
+      height: `${isExpanded ? bounds.expandedHeight : bounds.collapsedHeight}px`,
+    }
+    : undefined
+
+  return (
+    <div className={`control-item ${isExpanded ? 'expanded' : ''}`} style={style}>
+      <div className="control-item-bg-container">
+        <span className="control-item-bg" />
+      </div>
+      <button
+        ref={buttonRef}
+        type="button"
+        id={`env-item-${scene.id}-button`}
+        className="control-item-open"
+        aria-expanded={isExpanded}
+        onClick={onSelect}
+      >
+        <span className="control-item-label">
+          <svg className="plus-icon" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="11.3" style={{ stroke: 'currentColor', fill: 'none' }} />
+            <g transform="translate(7 7)" style={{ stroke: 'none', fill: 'currentColor' }}>
+              <path d="m9 4h-3v-3c0-0.553-0.447-1-1-1s-1 0.447-1 1v3h-3c-0.553 0-1 0.447-1 1s0.447 1 1 1h3v3c0 0.553 0.447 1 1 1s1-0.447 1-1v-3h3c0.553 0 1-0.447 1-1s-0.447-1-1-1" />
+            </g>
+          </svg>
+          {scene.name}
+        </span>
+      </button>
+      <div
+        tabIndex={-1}
+        className="control-item-content"
+        aria-hidden={!isExpanded}
+        aria-labelledby={`env-item-${scene.id}-button`}
+      >
+        <div className="control-item-content-mask">
+          <div ref={contentRef} className="control-item-content-inner">
+            <p className="control-item-body">
+              <strong className="control-item-title">{scene.name}.</strong> {scene.description}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function formatTime(seconds) {
   const s = Math.max(0, Math.floor(seconds))
   const mins = Math.floor(s / 60)
   const secs = s % 60
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`
 }
-
+// ll
 function App() {
   const [isPlaying, setIsPlaying] = useState(true)
   const [volume, setVolume] = useState(24) // Starts around ~24% like the screenshot
@@ -125,23 +210,28 @@ function App() {
         </div>
         <div className="demo-stage-layout">
           <aside className="environment-panel" aria-label="Demo settings">
-            <p className="environment-menu-title">Environment</p>
             <div className="environment-options" role="group" aria-label="Choose environment">
-              {[{ id: 'nyc', name: 'New York City', icon: 'building.2' },
-              { id: 'library', name: 'Library', icon: 'books.vertical' }].map((scene) => (
-                <button type="button" key={scene.id} className="environment-option"
-                  aria-pressed={environment === scene.id} onClick={() => setEnvironment(scene.id)}>
-                  <Symbol name={scene.icon} />
-                  <span>{scene.name}</span>
-                  <Symbol name="checkmark" className="scene-check" />
-                </button>
+              {ENVIRONMENTS.map((scene) => (
+                <EnvironmentControlItem
+                  key={scene.id}
+                  scene={scene}
+                  isExpanded={environment === scene.id}
+                  onSelect={() => setEnvironment(scene.id)}
+                />
               ))}
             </div>
-            <div className="mode-setting">
+            <div className="mode-setting-pill">
               <span>Discretion Mode</span>
-              <button type="button" role="switch" aria-checked={discretionEnabled} aria-label="Discretion Mode"
+              <button
+                type="button"
+                role="switch"
+                aria-checked={discretionEnabled}
+                aria-label="Discretion Mode"
                 className={`mode-switch ${discretionEnabled ? 'is-on' : ''}`}
-                onClick={() => setDiscretionEnabled((enabled) => !enabled)}><span /></button>
+                onClick={() => setDiscretionEnabled((enabled) => !enabled)}
+              >
+                <span />
+              </button>
             </div>
           </aside>
           <div className="iphone-stage">
@@ -300,8 +390,8 @@ function App() {
                   <Symbol name="quote.bubble" />
                 </button>
 
-                <button type="button" className="utility-btn" aria-label="AirPlay">
-                  <Symbol name="airplay.audio" />
+                <button type="button" className="utility-btn" aria-label="AirPods">
+                  <Symbol name="airpods.pro" />
                 </button>
 
                 <button type="button" className="utility-btn" aria-label="Up Next Queue">
